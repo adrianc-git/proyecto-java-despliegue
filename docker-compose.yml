@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mi_bd
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - red-java
+
+  webapp:
+    build: ./app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    # --- AQUÍ ESTÁ LA MAGIA GELMAN ---
+    volumes:
+      # Esto conecta tu carpeta 'app' local con la carpeta del servidor Tomcat
+      - ./app:/usr/local/tomcat/webapps/ROOT
+    # ---------------------------------
+    networks:
+      - red-java
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+    networks:
+      - red-java
+
+networks:
+  red-java:
